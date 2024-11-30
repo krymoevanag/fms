@@ -1,33 +1,27 @@
 <?php
-include('db_connection.php');
-session_start();
+// Include dp.php for database connection and session management
+include("db_connection.php");
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    die("You must be logged in to save savings.");
+}
+
+$user_id = $_SESSION['user_id']; // Get the logged-in user ID
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = $_SESSION['user_id'];
+    // Get the form data
     $amount = $_POST['amount'];
-    $date = $_POST['date'];
+    $date = $_POST['date']; // Date input from the form
 
-    $query = "INSERT INTO savings (user_id, amount, date) VALUES (?, ?, ?)";
+    // Insert savings data into the database
+    $query = "INSERT INTO savings (user_id, amount, created_at) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ids", $user_id, $amount, $date);
+    $stmt->bind_param("ids", $user_id, $amount, $date); // 'i' for integer, 'd' for double, 's' for string (date)
+    $stmt->execute();
 
-    if ($stmt->execute()) {
-        header("Location: dashboard.php");
-    } else {
-        echo "Error: " . $stmt->error;
-    }
+    // Redirect to dashboard after saving
+    header("Location: dashboard.php");
+    exit();
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Savings</title>
-</head>
-<body>
-    <form method="POST">
-        <input type="number" name="amount" placeholder="Amount" required>
-        <input type="date" name="date" required>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>
